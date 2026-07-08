@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NutriFit - Sistema de Nutrição</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+      color: #e0e0e0;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      padding: 2rem;
+    }
+    .container { max-width: 800px; width: 100%; }
+    h1 {
+      text-align: center;
+      font-size: 2.2rem;
+      margin-bottom: .25rem;
+      background: linear-gradient(90deg, #f7971e, #ffd200);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .subtitle {
+      text-align: center;
+      color: #888;
+      margin-bottom: 2rem;
+      font-size: .95rem;
+    }
+    .card {
+      background: rgba(255,255,255,.05);
+      border: 1px solid rgba(255,255,255,.1);
+      border-radius: 16px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      backdrop-filter: blur(10px);
+    }
+    .card h2 {
+      font-size: 1.1rem;
+      margin-bottom: 1rem;
+      color: #ffd200;
+    }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
+    label { display: block; font-size: .85rem; color: #aaa; margin-bottom: .3rem; }
+    input, select {
+      width: 100%;
+      padding: .65rem .75rem;
+      border: 1px solid rgba(255,255,255,.15);
+      border-radius: 8px;
+      background: rgba(0,0,0,.3);
+      color: #fff;
+      font-size: .95rem;
+      outline: none;
+      transition: border-color .2s;
+    }
+    input:focus, select:focus { border-color: #ffd200; }
+    input::placeholder { color: #666; }
+    select option { background: #1a1a2e; }
+
+    button {
+      width: 100%;
+      padding: .85rem;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      background: linear-gradient(90deg, #f7971e, #ffd200);
+      color: #1a1a2e;
+      cursor: pointer;
+      transition: transform .1s, opacity .2s;
+      margin-top: .5rem;
+    }
+    button:hover { opacity: .9; }
+    button:active { transform: scale(.98); }
+
+    .resultado {
+      display: none;
+      animation: fadeIn .4s ease;
+    }
+    .resultado.mostrar { display: block; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    .macro-card {
+      text-align: center;
+      padding: 1rem;
+      border-radius: 12px;
+      background: rgba(255,255,255,.05);
+      border: 1px solid rgba(255,255,255,.08);
+    }
+    .macro-card .valor {
+      font-size: 2rem;
+      font-weight: 700;
+    }
+    .macro-card .rotulo {
+      font-size: .8rem;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+    }
+    .macro-card .gramas {
+      font-size: .85rem;
+      color: #ccc;
+      margin-top: .25rem;
+    }
+    .macro-card.proteina .valor { color: #ff6b6b; }
+    .macro-card.carbo .valor { color: #ffd93d; }
+    .macro-card.gordura .valor { color: #6bcb77; }
+
+    .meta-info {
+      display: flex;
+      justify-content: space-between;
+      padding: .75rem 0;
+      border-bottom: 1px solid rgba(255,255,255,.06);
+    }
+    .meta-info:last-child { border-bottom: none; }
+    .meta-info .label { color: #888; }
+    .meta-info .value { font-weight: 600; }
+
+    .refeicao {
+      padding: .75rem;
+      margin-bottom: .5rem;
+      border-radius: 8px;
+      background: rgba(255,255,255,.03);
+      border-left: 3px solid #f7971e;
+    }
+    .refeicao .nome { font-weight: 600; color: #ffd200; }
+    .refeicao .desc { font-size: .9rem; color: #bbb; margin-top: .25rem; }
+    .refeicao .cal { font-size: .8rem; color: #888; margin-top: .15rem; }
+
+    .dica {
+      background: rgba(255,210,0,.08);
+      border: 1px solid rgba(255,210,0,.2);
+      border-radius: 8px;
+      padding: .75rem;
+      margin-top: 1rem;
+      font-size: .9rem;
+      color: #ddd;
+    }
+
+    .radio-group { display: flex; gap: .5rem; margin-top: .3rem; flex-wrap: wrap; }
+    .radio-group label {
+      display: flex;
+      align-items: center;
+      gap: .3rem;
+      padding: .4rem .7rem;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,.1);
+      cursor: pointer;
+      font-size: .85rem;
+      color: #ccc;
+      transition: all .2s;
+    }
+    .radio-group label:hover { border-color: #ffd200; }
+    .radio-group input[type="radio"] { display: none; }
+    .radio-group input[type="radio"]:checked + span { color: #ffd200; }
+    .radio-group input[type="radio"]:checked ~ .check { display: inline; }
+    .radio-group label:has(input:checked) { border-color: #ffd200; background: rgba(255,210,0,.1); }
+
+    @media (max-width: 600px) {
+      .grid-2, .grid-3 { grid-template-columns: 1fr; }
+      body { padding: 1rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🏋️ NutriFit</h1>
+    <p class="subtitle">Sistema inteligente de nutrição para academia</p>
+
+    <div class="card">
+      <h2>📝 Seus Dados</h2>
+      <div class="grid-2">
+        <div>
+          <label>Idade (anos)</label>
+          <input type="number" id="idade" value="25" min="10" max="100">
+        </div>
+        <div>
+          <label>Peso (kg)</label>
+          <input type="number" id="peso" value="70" min="30" max="300" step=".1">
+        </div>
+        <div>
+          <label>Altura (cm)</label>
+          <input type="number" id="altura" value="175" min="100" max="250">
+        </div>
+        <div>
+          <label>Sexo</label>
+          <select id="sexo">
+            <option value="masculino">Masculino</option>
+            <option value="feminino">Feminino</option>
+          </select>
+        </div>
+      </div>
+      <div style="margin-top: 1rem;">
+        <label>Nível de Atividade Física</label>
+        <select id="atividade">
+          <option value="1.2">Sedentário (pouco ou nenhum exercício)</option>
+          <option value="1.375">Leve (1-3 dias/semana)</option>
+          <option value="1.55" selected>Moderado (3-5 dias/semana)</option>
+          <option value="1.725">Intenso (6-7 dias/semana)</option>
+          <option value="1.9">Atleta (2x ao dia, treino pesado)</option>
+        </select>
+      </div>
+      <div style="margin-top: 1rem;">
+        <label>Objetivo</label>
+        <div class="radio-group" id="objetivo">
+          <label><input type="radio" name="objetivo" value="cutting" checked><span>🔽 Emagrecer</span></label>
+          <label><input type="radio" name="objetivo" value="maintenance"><span>➡️ Manter</span></label>
+          <label><input type="radio" name="objetivo" value="bulking"><span>🔼 Hipertrofia</span></label>
+        </div>
+      </div>
+      <button onclick="calcular()">Calcular</button>
+    </div>
+
+    <div class="card resultado" id="resultado">
+      <h2>📊 Seus Resultados</h2>
+
+      <div class="grid-2" style="margin-bottom: 1rem;">
+        <div class="meta-info"><span class="label">Taxa Metabólica Basal</span><span class="value" id="tmb">-</span></div>
+        <div class="meta-info"><span class="label">Gasto Calórico Diário</span><span class="value" id="tdee">-</span></div>
+        <div class="meta-info"><span class="label">Calorias recomendadas</span><span class="value" id="caloriasAlvo">-</span></div>
+        <div class="meta-info"><span class="label">Proteína por kg</span><span class="value" id="proteinaKg">-</span></div>
+      </div>
+
+      <h2 style="margin-top: 1rem;">🥩 Macros do Dia</h2>
+      <div class="grid-3">
+        <div class="macro-card proteina">
+          <div class="valor" id="macroProt">-</div>
+          <div class="rotulo">Proteína</div>
+          <div class="gramas" id="protGramas">- g</div>
+        </div>
+        <div class="macro-card carbo">
+          <div class="valor" id="macroCarb">-</div>
+          <div class="rotulo">Carboidrato</div>
+          <div class="gramas" id="carbGramas">- g</div>
+        </div>
+        <div class="macro-card gordura">
+          <div class="valor" id="macroGord">-</div>
+          <div class="rotulo">Gordura</div>
+          <div class="gramas" id="gordGramas">- g</div>
+        </div>
+      </div>
+
+      <h2 style="margin-top: 1.5rem;">🍽️ Sugestão de Cardápio</h2>
+      <div id="cardapio"></div>
+
+      <div class="dica" id="dica"></div>
+    </div>
+  </div>
+
+  <script>
+    function calcular() {
+      const idade = Number(document.getElementById('idade').value);
+      const peso = Number(document.getElementById('peso').value);
+      const altura = Number(document.getElementById('altura').value);
+      const sexo = document.getElementById('sexo').value;
+      const fatorAtividade = Number(document.getElementById('atividade').value);
+      const objetivo = document.querySelector('input[name="objetivo"]:checked').value;
+
+      // TMB - Mifflin-St Jeor
+      let tmb;
+      if (sexo === 'masculino') {
+        tmb = 10 * peso + 6.25 * altura - 5 * idade + 5;
+      } else {
+        tmb = 10 * peso + 6.25 * altura - 5 * idade - 161;
+      }
+
+      const tdee = Math.round(tmb * fatorAtividade);
+
+      // Ajuste por objetivo
+      let caloriasAlvo, proteinaKg;
+      switch (objetivo) {
+        case 'cutting':
+          caloriasAlvo = tdee - 500;
+          proteinaKg = 2.2;
+          break;
+        case 'maintenance':
+          caloriasAlvo = tdee;
+          proteinaKg = 1.8;
+          break;
+        case 'bulking':
+          caloriasAlvo = tdee + 350;
+          proteinaKg = 2.0;
+          break;
+      }
+
+      const proteinaG = Math.round(peso * proteinaKg);
+      const caloriasProt = proteinaG * 4;
+      const gorduraG = Math.round((caloriasAlvo * 0.25) / 9);
+      const caloriasGord = gorduraG * 9;
+      const caloriasCarb = caloriasAlvo - caloriasProt - caloriasGord;
+      const carbG = Math.round(caloriasCarb / 4);
+
+      // Exibir
+      document.getElementById('tmb').textContent = `${Math.round(tmb)} kcal`;
+      document.getElementById('tdee').textContent = `${tdee} kcal`;
+      document.getElementById('caloriasAlvo').textContent = `${caloriasAlvo} kcal`;
+      document.getElementById('proteinaKg').textContent = `${proteinaKg}g / kg`;
+
+      document.getElementById('macroProt').textContent = `${caloriasProt} kcal`;
+      document.getElementById('protGramas').textContent = `${proteinaG}g`;
+      document.getElementById('macroCarb').textContent = `${caloriasCarb} kcal`;
+      document.getElementById('carbGramas').textContent = `${carbG}g`;
+      document.getElementById('macroGord').textContent = `${caloriasGord} kcal`;
+      document.getElementById('gordGramas').textContent = `${gorduraG}g`;
+
+      // Cardápio
+      const cardapio = [
+        { nome: '🌅 Café da Manhã', desc: sugestaoCafe(objetivo), cal: Math.round(caloriasAlvo * 0.2) },
+        { nome: '🍗 Almoço', desc: sugestaoAlmoco(objetivo), cal: Math.round(caloriasAlvo * 0.35) },
+        { nome: '🥤 Lanche Tarde', desc: sugestaoLanche(objetivo), cal: Math.round(caloriasAlvo * 0.15) },
+        { nome: '🥩 Jantar', desc: sugestaoJantar(objetivo), cal: Math.round(caloriasAlvo * 0.25) },
+        { nome: '🌙 Ceia (opcional)', desc: sugestaoCeia(objetivo), cal: Math.round(caloriasAlvo * 0.05) }
+      ];
+
+      document.getElementById('cardapio').innerHTML = cardapio.map(r =>
+        `<div class="refeicao"><div class="nome">${r.nome}</div><div class="desc">${r.desc}</div><div class="cal">~${r.cal} kcal</div></div>`
+      ).join('');
+
+      // Dica
+      const dicas = {
+        cutting: '💡 Prefira alimentos com baixa densidade calórica (vegetais, proteínas magras). Beba bastante água! O déficit de 500 kcal/dia resulta em ~0.5kg/semana perdidos.',
+        maintenance: '💡 Mantenha o equilíbrio! A proteína é essencial para recuperação muscular. Varie as fontes de carboidrato (arroz, batata, frutas).',
+        bulking: '💡 Foque em alimentos nutrientemente densos. O superávit de 350 kcal/dia com treino pesado favorece ganho de massa magra. Evite junk food para não acumular gordura.'
+      };
+      document.getElementById('dica').textContent = dicas[objetivo];
+
+      document.getElementById('resultado').classList.add('mostrar');
+      document.getElementById('resultado').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function sugestaoCafe(objetivo) {
+      const opcoes = {
+        bulk: '4 ovos mexidos + 2 fatias pão integral + 1 banana + pasta de amendoim (30g) + café',
+        cut: '2 ovos mexidos + 1 fatia pão integral + 1 fruta + café sem açúcar',
+        maintain: '3 omelete claras + 1 fatia pão integral + 1 banana + café'
+      };
+      return opcoes[objetivo] || opcoes.maintain;
+    }
+
+    function sugestaoAlmoco(objetivo) {
+      const opcoes = {
+        bulk: '200g arroz + 150g frango + 100g feijão + salada + 1 batata doce média',
+        cut: '150g arroz integral + 120g frango grelhado + salada verde + legumes',
+        maintain: '180g arroz + 130g carne magra + 80g feijão + salada'
+      };
+      return opcoes[objetivo] || opcoes.maintain;
+    }
+
+    function sugestaoLanche(objetivo) {
+      const opcoes = {
+        bulk: 'shake: 2 scoops whey + 300ml leite + 1 banana + 30g aveia + 20g pasta amendoim',
+        cut: '1 iogurte natural + 1 scoop whey + frutas vermelhas',
+        maintain: 'shake: 1 scoop whey + 200ml leite + 1 fruta + 20g aveia'
+      };
+      return opcoes[objetivo] || opcoes.maintain;
+    }
+
+    function sugestaoJantar(objetivo) {
+      const opcoes = {
+        bulk: '200g salmão + 250g batata doce + brócolis + azeite',
+        cut: '150g peixe branco + legumes refogados + 100g arroz integral',
+        maintain: '180g carne magra + 200g batata + salada + azeite'
+      };
+      return opcoes[objetivo] || opcoes.maintain;
+    }
+
+    function sugestaoCeia(objetivo) {
+      const opcoes = {
+        bulk: '1 pote iogurte grego + 20g whey + 15g castanhas + mel',
+        cut: 'chá + 1 scoop caseína ou 3 claras',
+        maintain: '1 iogurte grego + mel + canela'
+      };
+      return opcoes[objetivo] || opcoes.maintain;
+    }
+
+    calcular();
+  </script>
+</body>
+</html>
